@@ -75,12 +75,12 @@ export default {
     },
     // 内容区拖动围栏
     contentMoveFence () {
-      if (this.contentScrollLeft > 0) this.contentScrollLeft = 0
-      if (this.contentScrollTop > 0) this.contentScrollTop = 0
       const endX = -this.contentScrollRangeX
       const endY = -this.contentScrollRangeY
       if (this.contentScrollLeft < endX) this.contentScrollLeft = endX
       if (this.contentScrollTop < endY) this.contentScrollTop = endY
+      if (this.contentScrollLeft > 0) this.contentScrollLeft = 0
+      if (this.contentScrollTop > 0) this.contentScrollTop = 0
     },
     setContentMove (clientX, clientY) {
       if (!this.contentMoveStartX && !this.contentMoveStartX) {
