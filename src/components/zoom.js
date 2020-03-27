@@ -17,6 +17,10 @@ export default {
         this.resetZoom()
       },
       immediate: true
+    },
+    zoom (zoom) {
+      // this.contentScrollLeft += this.contentWidth * (zoom - 1)
+      // this.contentScrollTop += this.contentHeight * (zoom - 1)
     }
   },
   computed: {

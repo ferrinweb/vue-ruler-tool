@@ -71,8 +71,8 @@ export default {
     easingMove () {
       const dragTime = this.contentDragTime
       const zoom = this.zoom
-      this.contentScrollLeft += this.contentDragDistanceX / dragTime * 100 * (zoom > 1 ? zoom : 1) | 0
-      this.contentScrollTop += this.contentDragDistanceY / dragTime * 100 * (zoom > 1 ? zoom : 1) | 0
+      this.contentScrollLeft += this.contentDragDistanceX / dragTime * 30 * (zoom > 1 ? zoom : 1) | 0
+      this.contentScrollTop += this.contentDragDistanceY / dragTime * 30 * (zoom > 1 ? zoom : 1) | 0
       this.contentMoveFence()
       this.easingMoveTimer = setTimeout(() => {
         this.contentDragTime = 0
