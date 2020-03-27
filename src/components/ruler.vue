@@ -1,5 +1,5 @@
 <template functional>
-  <section v-show="props.show" :style="props.contentMove && 'pointer-events: none'">
+  <section v-show="props.show" :style="(props.contentMove || props.zoom !== 1) && 'pointer-events: none'">
     <div class="ruler-wrapper h">
       <div
         ref="horizontalRuler"
@@ -7,7 +7,13 @@
         :style="`width: ${props.hrWidth}px; transform: translateX(${props.scrollLeft}px); transition: ${props.dragTransition};`"
         @mousedown.stop="props.createHGuide"
       >
-        <span v-for="(item,index) in props.xScale" :key="index" :style="{left:index * 50 + 2 + 'px'}" class="n">{{ item.id }}</span>
+        <span
+          v-for="(item,index) in props.xScale"
+          :key="index"
+          :style="{left:index * 50 + 2 + 'px'}"
+          :class="{zeroScale: item.id === 0}"
+          class="n"
+        >{{ item.id }}</span>
       </div>
     </div>
     <div class="ruler-wrapper v">
@@ -17,7 +23,12 @@
         :style="`height: ${props.vrHeight}px; transform: translateY(${props.scrollTop}px); transition: ${props.dragTransition};`"
         @mousedown.stop="props.createVGuide"
       >
-        <span v-for="(item,index) in props.yScale" :key="index" :style="{top:index * 50 + 2 + 'px'}" class="n">{{ item.id }}</span>
+        <span
+          v-for="(item,index) in props.yScale"
+          :key="index"
+          :style="{top:index * 50 + 2 + 'px'}"
+          class="n"
+        >{{ item.id }}</span>
       </div>
     </div>
   </section>
@@ -93,6 +104,7 @@
 
   .vue-ruler-h .n {
     top: 1px;
+    pointer-events: none;
   }
 }
 </style>

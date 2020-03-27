@@ -4,14 +4,15 @@
       :show="rulerToggle"
       :xScale="xScale"
       :yScale="yScale"
-      :hrWidth="hrWidth + contentLayout.left"
-      :vrHeight="vrHeight + contentLayout.top"
-      :scrollLeft="contentScrollLeft"
-      :scrollTop="contentScrollTop"
+      :hrWidth="rulerRange * 1.5"
+      :vrHeight="rulerRange * 1.5"
+      :scrollLeft="hRulerScrollLeft"
+      :scrollTop="vRulerScrollTop"
       :contentMove="contentMove"
       :create-h-guide="horizontalDragRuler"
       :create-v-guide="verticalDragRuler"
       :dragTransition="dragTransition"
+      :zoom="zoom"
     ></ruler>
 
     <guides
@@ -19,10 +20,13 @@
       :vGuideTop="verticalDottedTop"
       :hGuideLeft="horizontalDottedLeft"
       :contentMove="contentMove"
+      :contentWidth="contentWidth"
+      :contentHeight="contentHeight"
       :guides="lineList"
       :scrollLeft="contentScrollLeft"
       :scrollTop="contentScrollTop"
       :dragTransition="dragTransition"
+      :zoom="zoom"
       @line-drag="handleDragLine"
     ></guides>
     
@@ -33,7 +37,7 @@
       @mousedown.stop="markContentMoveStart($event)"
       @mousemove.prevent
     >
-      <div class="content-bod" :style="contentMove && 'pointer-events: none'">
+      <div class="content-body" :style="contentMove && 'pointer-events: none'">
         <slot />
       </div>
     </div>
@@ -47,10 +51,11 @@ import guides from './guides'
 import eventHandlers from './event'
 import contentDrag from './content-drag'
 import guideDrag from './guide-drag'
+import zoom from './zoom'
 
 export default {
   name: 'VRuler',
-  mixins: [eventHandlers, contentDrag, guideDrag],
+  mixins: [eventHandlers, contentDrag, guideDrag, zoom],
   components: {
     ruler,
     guides
@@ -98,6 +103,10 @@ export default {
       type: Number,
       default: 50,
       validator: (val) => val % 10 === 0
+    },
+    rulerRange: {
+      type: Number,
+      default: 10000
     }
   },
   data () {
@@ -152,17 +161,18 @@ export default {
       this.leftSpacing = this.$refs.verticalRuler.getBoundingClientRect().x// .offsetParent.offsetLeft
     },
     scaleCalc () {
-      const content = this.contentLayout
-      // 修正刻度
-      this.getCalcRevise(this.xScale, this.isScaleRevise ? content.left : 0)
-      this.getCalcRevise(this.yScale, this.isScaleRevise ? content.top : 0)
-      this.getCalc(this.xScale, this.hrWidth)
-      this.getCalc(this.yScale, this.vrHeight)
+      const rulerRange = this.rulerRange
+      // 负刻度
+      this.getCalcRevise(this.xScale, rulerRange / 2)
+      this.getCalcRevise(this.yScale, rulerRange / 2)
+      this.getCalc(this.xScale, rulerRange)
+      this.getCalc(this.yScale, rulerRange)
     },
     // 获取刻度方法
     getCalc (array,length) {
-      for (let i = 0; i < length * this.stepLength / 50; i += this.stepLength) {
-        if (i % this.stepLength === 0) {
+      const step = this.stepLength / this.zoom
+      for (let i = 0; i < length * step / 50; i += step) {
+        if (i % step === 0) {
           array.push({ id: i })
         }
       }
@@ -170,8 +180,9 @@ export default {
     // 生成 0 刻度前置刻度
     getCalcRevise (array,length) {
       array.splice(0)
-      for (let i = -length * this.stepLength / 50; i < 0; i += this.stepLength) {
-        if (i % this.stepLength === 0 && i + this.stepLength <= length) {
+      const step = this.stepLength / this.zoom
+      for (let i = -length * step / 50; i < 0; i += step) {
+        if (i % step === 0 && i + step <= length) {
           array.push({ id: i })
         }
       }
@@ -193,6 +204,8 @@ export default {
   }
   &-content {
     position: absolute;
+    left: 0;
+    top: 0;
     z-index: 2;
     width: auto;
     height: auto;

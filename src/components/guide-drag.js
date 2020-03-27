@@ -61,13 +61,13 @@ export default {
         case 'x':
           cloneList.push({
             type: 'h',
-            site: (clientY - this.topSpacing - this.size) * (this.stepLength / 50) - this.contentScrollTop | 0
+            site: ((clientY - this.topSpacing - this.size) * (this.stepLength / 50) - this.contentScrollTop) | 0
           })
           break
         case 'y':
           cloneList.push({
             type: 'v',
-            site: (clientX - this.leftSpacing - this.size) * (this.stepLength / 50) - this.contentScrollLeft | 0
+            site: ((clientX - this.leftSpacing - this.size) * (this.stepLength / 50) - this.contentScrollLeft) | 0
           })
           break
         case 'h':

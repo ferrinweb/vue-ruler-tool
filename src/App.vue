@@ -14,7 +14,7 @@
         :visible.sync="visible"
         :contentLayout="{top: 100, left: 100}"
       >
-        <img src="https://cn.vuejs.org/images/logo.png" style="width: 3000px;height: 3000px;margin: 100px;" alt="">
+        <img src="http://localhost/demo-image.jpg" width="1920" height="1080" style="margin: 100px;" alt="">
          <!--<iframe src="https://www.baidu.com" width="500" height="300" />-->
       </vue-ruler-tool>
     </section>

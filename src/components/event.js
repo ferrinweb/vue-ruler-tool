@@ -21,10 +21,6 @@ export default {
             this.vrHeight = (height && height > this.windowHeight ? height : this.windowHeight) + contentTop
             this.scaleCalc()
         },
-        updateContentPos () {
-            this.contentScrollLeft = this.contentRef.scrollLeft
-            this.contentScrollTop = this.contentRef.scrollTop
-        },
         toggleContentMove (e) {
             if (e.keyCode === 17) this.contentMove = true
         },
@@ -35,6 +31,8 @@ export default {
             this.windowHeight = position.height
             this.rulerWidth = this.$refs.verticalRuler.clientWidth
             this.rulerHeight = this.$refs.horizontalRuler.clientHeight
+            this.contentWidth = this.contentRef.scrollWidth
+            this.contentHeight = this.contentRef.scrollHeight
         },
         // 键盘事件
         keyboard ($event) {
@@ -74,6 +72,8 @@ export default {
         document.addEventListener('keydown', this.toggleContentMove)
         window.addEventListener('resize', this.windowResize)
         window.addEventListener('scroll', this.setSpacing)
+        this.$refs.rulerWrapper.addEventListener('wheel', this.setZoom)
+        this.$refs.rulerWrapper.addEventListener('dblclick', this.resetZoom)
         this.init()
     },
     beforeDestroy () {
@@ -83,5 +83,7 @@ export default {
         document.removeEventListener('keydown', this.toggleContentMove)
         window.removeEventListener('resize', this.windowResize)
         window.removeEventListener('scroll', this.setSpacing)
+        this.$refs.rulerWrapper.removeEventListener('wheel', this.setZoom)
+        this.$refs.rulerWrapper.removeEventListener('dblclick', this.resetZoom)
     }
 }
