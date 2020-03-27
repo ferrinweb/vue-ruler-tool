@@ -12,7 +12,7 @@
         }"
         :key="item.id"
         :class="`vue-ruler-ref-line-${item.type}`"
-        @mousedown="$emit('line-drag', item)"
+        @mousedown="$emit('line-drag', item, $event)"
       ></div>
     </div>
   </section>

@@ -134,11 +134,13 @@ export default {
       this.dragFlag = val
     },
     // 水平标尺处按下鼠标
-    horizontalDragRuler () {
+    horizontalDragRuler (e) {
+      if (e.which !== 1) return
       this.newLine('x')
     },
     // 垂直标尺处按下鼠标
-    verticalDragRuler () {
+    verticalDragRuler (e) {
+      if (e.which !== 1) return
       this.newLine('y')
     }
   }

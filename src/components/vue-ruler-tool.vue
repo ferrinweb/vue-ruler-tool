@@ -41,6 +41,7 @@
         <slot />
       </div>
     </div>
+    <div class="zoom-tip">ZOOM: {{zoom}}</div>
     <div v-show="isDrag" class="vue-ruler-content-mask"></div>
   </div>
 </template>
@@ -153,7 +154,8 @@ export default {
     }
   },
   methods: {
-    handleDragLine({type, id}) {
+    handleDragLine({type, id}, e) {
+      if (e.which !== 1) return
       return type === 'h' ? this.dragHorizontalLine(id) : this.dragVerticalLine(id)
     },
     setSpacing () {
@@ -220,5 +222,15 @@ export default {
     background: transparent;
     z-index: 4;
   }
+}
+.zoom-tip{
+  position: absolute;
+  bottom: 15px;
+  left: 33px;
+  color: white;
+  font-size: 12px;
+  background-color: rgba(0,0,0,.5);
+  padding: 4px 8px;
+  z-index: 10;
 }
 </style>
