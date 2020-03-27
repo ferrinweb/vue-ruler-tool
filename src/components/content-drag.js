@@ -36,9 +36,9 @@ export default {
         paddingTop: this.contentLayout.top + 18 + 'px',
         paddingRight: this.contentLayout.left + 18 + 'px',
         paddingBottom: this.contentLayout.top + 18 + 'px',
-        cursor: this.contentMove ? 'move' : '',
         transform: `translate3d(${this.contentScrollLeft}px, ${this.contentScrollTop}px, 0) scale(${this.zoom})`,
-        transition: this.dragTransition
+        transition: this.dragTransition,
+        pointerEvents: this.contentMove ? 'none' : 'auto'
       }
     },
     dragTransition () {

@@ -33,13 +33,16 @@
     ></guides>
     
     <div
-      ref="content"
+      :class="{ drag: contentMove }"
       class="vue-ruler-content"
-      :style="contentStyle"
       @mousedown.stop="markContentMoveStart($event)"
       @mousemove.prevent
     >
-      <div class="content-body" :style="contentMove && 'pointer-events: none'">
+      <div
+        ref="content"
+        :style="contentStyle"
+        class="content-body"
+      >
         <slot />
       </div>
     </div>
@@ -215,11 +218,23 @@ export default {
     left: 0;
     top: 0;
     z-index: 2;
-    width: auto;
-    height: auto;
-    padding: 18px;
+    width: 100%;
+    height: 100%;
     overflow: hidden;
-    transition: transform .4s;
+    &.drag{
+      cursor: move;
+    }
+    .content-body{
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: auto;
+      height: auto;
+      padding: 18px;
+      overflow: hidden;
+      transition: transform .4s;
+      overflow: hidden;
+    }
   }
   &-content-mask{
     position: absolute;
