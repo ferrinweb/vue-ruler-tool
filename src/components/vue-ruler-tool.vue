@@ -12,6 +12,8 @@
       :create-h-guide="horizontalDragRuler"
       :create-v-guide="verticalDragRuler"
       :dragTransition="dragTransition"
+      :clientX="clientX"
+      :clientY="clientY"
       :zoom="zoom"
     ></ruler>
 
@@ -133,14 +135,18 @@ export default {
     lineList() {
       let hCount = 0;
       let vCount = 0;
+      const { left, top } = this.contentLayout
       return this.value.map((item) => {
         const isH = item.type === 'h'
+        const site = item.site
+        const value = site - (isH ? top : left)
         return {
           id: `${item.type}_${isH ? hCount++ : vCount++}`,
           type: item.type,
-          title: item.site.toFixed(2) + 'px',
-          site: item.site,
-          [isH ? 'top' : 'left']: item.site / (this.stepLength / 50) + this.size
+          title: value + 'px',
+          site: site,
+          value,
+          [isH ? 'top' : 'left']: site / (this.stepLength / 50) + this.size
         }
       }).filter(item => item.site > -18)
     }

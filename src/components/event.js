@@ -1,4 +1,10 @@
 export default {
+    data () {
+        return {
+            clientX: 0,
+            clientY: 0
+        }
+    },
     methods: {
         init () {
             this.box()
@@ -51,6 +57,8 @@ export default {
         },
         setMove ($event) {
             const { clientX, clientY } = $event
+            this.clientX = clientX
+            this.clientY = clientY
             if (this.contentDrag) {
                 this.setContentMove(clientX, clientY)
                 return

@@ -31,6 +31,8 @@
         >{{ item.id }}</span>
       </div>
     </div>
+    <div class="mouse-position x" :style="`transform: translateX(${props.clientX + 1}px)`"></div>
+    <div class="mouse-position y" :style="`transform: translateY(${props.clientY + 1}px)`"></div>
   </section>
 </template>
 
@@ -105,6 +107,23 @@
   .vue-ruler-h .n {
     top: 1px;
     pointer-events: none;
+  }
+}
+.mouse-position{
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 3;
+  pointer-events: none;
+  &.x{
+    height: 18px;
+    width: 1px;
+    background-color: rgba(0,0,0,.4);
+  }
+  &.y{
+    height: 1px;
+    width: 18px;
+    background-color: rgba(0,0,0,.4);
   }
 }
 </style>
