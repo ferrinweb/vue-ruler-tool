@@ -1,4 +1,10 @@
 export default {
+  props: {
+    guideStep: {
+      type: Number,
+      default: 5
+    }
+  },
   data () {
     return {
       isDrag: false,
@@ -6,29 +12,41 @@ export default {
       dragFlag: '', // 拖动开始标记，可能值x(从水平标尺开始拖动),y(从垂直标尺开始拖动)
       horizontalDottedLeft: -999, // 水平虚线位置
       verticalDottedTop: -999, // 垂直虚线位置
-      dragLineId: '' // 被移动线的ID
+      dragGuideId: '', // 被移动线的ID
+      guideDragStartX: 0,
+      guideDragStartY: 0
     }
   },
   methods: {
-    dottedLineMove (clientX, clientY) {
-      if (!this.isDrag) return
-      this.isMoved = true
+    guideStepFence (value) {
+      const step = this.guideStep
+      const halfStep = step / 2
+      const remaining = value % step
+      if (remaining === 0) return Math.ceil(value)
+      return Math.ceil(remaining < halfStep ? value - remaining : value + step - remaining)
+    },
+    setGuidePosition (clientX, clientY) {
       switch (this.dragFlag) {
         case 'x':
-          this.verticalDottedTop = clientY - this.topSpacing
+          this.verticalDottedTop = this.guideStepFence(clientY - this.topSpacing) - this.guideStepFixTop
           break
         case 'y':
-          this.horizontalDottedLeft = clientX - this.leftSpacing
+          this.horizontalDottedLeft = this.guideStepFence(clientX - this.leftSpacing) - this.guideStepFixLeft
           break
         case 'h':
-          this.verticalDottedTop = clientY - this.topSpacing
+          this.verticalDottedTop = this.guideStepFence(clientY - this.topSpacing) - this.guideStepFixTop
           break
         case 'v':
-          this.horizontalDottedLeft = clientX - this.leftSpacing
+          this.horizontalDottedLeft = this.guideStepFence(clientX - this.leftSpacing) - this.guideStepFixLeft
           break
         default:
           break
       }
+    },
+    dottedLineMove (clientX, clientY) {
+      if (!this.isDrag) return
+      this.isMoved = true
+      this.setGuidePosition(clientX, clientY)
     },
     clickDraw (clientX, clientY) {
       if (this.verticalDottedTop !== -999 || this.horizontalDottedLeft !== -999) {
@@ -36,51 +54,38 @@ export default {
         this.isDrag = false
         return
       }
-      switch (this.dragFlag) {
-        case 'x':
-          this.verticalDottedTop = clientY - this.topSpacing
-          break
-        case 'y':
-          this.horizontalDottedLeft = clientX - this.leftSpacing
-          break
-        case 'h':
-          this.verticalDottedTop = clientY - this.topSpacing
-          break
-        case 'v':
-          this.horizontalDottedLeft = clientX - this.leftSpacing
-          break
-        default:
-          break
-      }
+      this.setGuidePosition(clientX, clientY)
     },
     dragDrawEnd (clientX, clientY) {
       this.isDrag = false
       this.isMoved = false
       const cloneList = JSON.parse(JSON.stringify(this.lineList))
+      const { stepLength, topSpacing, leftSpacing, size, rulerWidth, rulerHeight } = this
       switch (this.dragFlag) {
         case 'x':
           cloneList.push({
             type: 'h',
-            site: ((clientY - this.topSpacing - this.size) * (this.stepLength / 50) - this.contentScrollTop) | 0
+            site: this.guideStepFence((clientY - topSpacing - size) * (stepLength / 50) - this.contentScrollTop)
           })
           break
         case 'y':
           cloneList.push({
             type: 'v',
-            site: ((clientX - this.leftSpacing - this.size) * (this.stepLength / 50) - this.contentScrollLeft) | 0
+            site: this.guideStepFence((clientX - leftSpacing - size) * (stepLength / 50) - this.contentScrollLeft)
           })
           break
         case 'h':
-          this.dragCalc(cloneList, clientY, this.topSpacing, this.rulerHeight, 'h')
+          this.dragCalc(cloneList, clientY - this.guideDragStartY)
           break
         case 'v':
-          this.dragCalc(cloneList, clientX, this.leftSpacing, this.rulerWidth, 'v')
+          this.dragCalc(cloneList, clientX - this.guideDragStartX)
           break
         default:
           break
       }
       this.$emit('input', cloneList)
       this.verticalDottedTop = this.horizontalDottedLeft = -999
+      this.guideDragStartX = this.guideDragStartY = 0
     },
     // 虚线松开
     dottedLineUp ($event) {
@@ -92,41 +97,30 @@ export default {
       }
       this.dragDrawEnd(clientX, clientY)
     },
-    dragCalc (list, page, spacing, ruler, type) {
-      if (page - spacing < ruler) {
-        let Index, id
-        this.lineList.forEach((item, index) => {
-          if (item.id === this.dragLineId) {
-            Index = index
-            id = item.id
-          }
-        })
-        list.splice(Index, 1)
+    dragCalc (list, dragDistance) {
+      const guideIndex = list.findIndex(guide => guide.id === this.dragGuideId)
+      if (guideIndex === -1) return
+      const { site, type } = list[guideIndex]
+      const newSite = site + dragDistance
+      console.info(newSite)
+      // 不在画布内则移除该参考线
+      if (newSite >= 0 && (type === 'v' && newSite <= this.contentWidth || type === 'h' && newSite <= this.contentHeight)) {
+        list[guideIndex].site = this.guideStepFence(newSite)
       } else {
-        let Index, id
-        this.lineList.forEach((item, index) => {
-          if (item.id === this.dragLineId) {
-            Index = index
-            id = item.id
-          }
-        })
-        list.splice(Index, 1, {
-          type: type,
-          site: (page - spacing - this.size) * (this.stepLength / 50)
-        })
+        list.splice(guideIndex, 1)
       }
     },
     // 水平线处按下鼠标
     dragHorizontalLine (id) {
       this.isDrag = true
       this.dragFlag = 'h'
-      this.dragLineId = id
+      this.dragGuideId = id
     },
     // 垂直线处按下鼠标
     dragVerticalLine (id) {
       this.isDrag = true
       this.dragFlag = 'v'
-      this.dragLineId = id
+      this.dragGuideId = id
     },
     // 生成一个参考线
     newLine (val) {
@@ -142,6 +136,16 @@ export default {
     verticalDragRuler (e) {
       if (e.which !== 1) return
       this.newLine('y')
+    },
+    insertGuide (type) {
+      const cloneList = JSON.parse(JSON.stringify(this.lineList))
+      const site = window.prompt(`请输入${type === 'h' ? '水平' : '垂直'}参考线坐标`, '')
+      if (!site) return
+      cloneList.push({
+        type,
+        site: parseInt(site)
+      })
+      this.$emit('input', cloneList)
     }
   }
 }

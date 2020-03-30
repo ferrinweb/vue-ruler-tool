@@ -6,7 +6,7 @@
       <button @click="presetLine = [{ type: 'h', site: 100 }, { type: 'v', site: 200 }]">修改</button>
     </div>
     <section style="height: 100%; width: 100%;">
-      <vue-ruler-tool
+      <ruler-canvas
         v-model="presetLine"
         :step-length="50"
         :parent="true"
@@ -16,17 +16,17 @@
       >
         <img src="http://localhost/demo-image.jpg" width="1920" height="1080" style="margin: 100px;" alt="">
          <!--<iframe src="https://www.baidu.com" width="500" height="300" />-->
-      </vue-ruler-tool>
+      </ruler-canvas>
     </section>
   </div>
 </template>
 
 <script>
-import VueRulerTool from './components/vue-ruler-tool'
+import rulerCanvas from './components/'
 export default {
   name: 'app',
   components:{
-    VueRulerTool
+    rulerCanvas
   },
   data () {
     return {

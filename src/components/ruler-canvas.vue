@@ -1,54 +1,47 @@
 <template>
-  <div ref="rulerWrapper" :style="`position: ${position}`" class="vue-ruler-wrapper" onselectstart="return false;">
-    <ruler
-      :show="rulerToggle"
-      :xScale="xScale"
-      :yScale="yScale"
-      :hrWidth="rulerRange * 1.5"
-      :vrHeight="rulerRange * 1.5"
-      :scrollLeft="hRulerScrollLeft"
-      :scrollTop="vRulerScrollTop"
-      :contentMove="contentMove"
-      :create-h-guide="horizontalDragRuler"
-      :create-v-guide="verticalDragRuler"
-      :dragTransition="dragTransition"
-      :clientX="clientX"
-      :clientY="clientY"
-      :zoom="zoom"
-    ></ruler>
+    <div ref="rulerWrapper" :style="`position: ${position}`" class="vue-ruler-wrapper" onselectstart="return false;">
+        <ruler
+            :show="rulerToggle"
+            :xScale="xScale"
+            :yScale="yScale"
+            :hrWidth="rulerRange * 1.5"
+            :vrHeight="rulerRange * 1.5"
+            :scrollLeft="hRulerScrollLeft"
+            :scrollTop="vRulerScrollTop"
+            :contentMove="contentMove"
+            :create-h-guide="horizontalDragRuler"
+            :create-v-guide="verticalDragRuler"
+            :dragTransition="dragTransition"
+            :clientX="clientX - rulerLeft"
+            :clientY="clientY - rulerTop"
+            :zoom="zoom"
+        ></ruler>
 
-    <guides
-      v-show="rulerToggle"
-      :vGuideTop="verticalDottedTop"
-      :hGuideLeft="horizontalDottedLeft"
-      :contentMove="contentMove"
-      :contentWidth="contentWidth"
-      :contentHeight="contentHeight"
-      :guides="lineList"
-      :scrollLeft="contentScrollLeft"
-      :scrollTop="contentScrollTop"
-      :dragTransition="dragTransition"
-      :zoom="zoom"
-      @line-drag="handleDragLine"
-    ></guides>
-    
-    <div
-      :class="{ drag: contentMove }"
-      class="vue-ruler-content"
-      @mousedown.stop="markContentMoveStart($event)"
-      @mousemove.prevent
-    >
-      <div
-        ref="content"
-        :style="contentStyle"
-        class="content-body"
-      >
-        <slot />
-      </div>
+        <guides
+            v-show="rulerToggle"
+            :vGuideTop="verticalDottedTop"
+            :hGuideLeft="horizontalDottedLeft"
+            :contentMove="contentMove"
+            :left="contentLayout.left + 18"
+            :top="contentLayout.top + 18"
+            :contentWidth="contentWidth"
+            :contentHeight="contentHeight"
+            :guides="lineList"
+            :scrollLeft="contentScrollLeft"
+            :scrollTop="contentScrollTop"
+            :dragTransition="dragTransition"
+            :zoom="zoom"
+            @line-drag="handleDragLine"
+        ></guides>
+
+        <div :class="{ drag: contentMove }" class="vue-ruler-content" @mousedown="markContentMoveStart($event)" @mousemove.prevent>
+            <div ref="content" :style="contentStyle" class="content-body">
+                <slot />
+            </div>
+        </div>
+        <div class="zoom-tip">ZOOM: {{ zoom }}</div>
+        <div v-show="isDrag" class="vue-ruler-content-mask"></div>
     </div>
-    <div class="zoom-tip">ZOOM: {{zoom}}</div>
-    <div v-show="isDrag" class="vue-ruler-content-mask"></div>
-  </div>
 </template>
 
 <script>
@@ -117,7 +110,7 @@ export default {
   },
   data () {
     return {
-      size: 17,
+      size: 18,
       windowWidth: 0, // 窗口宽度
       windowHeight: 0, // 窗口高度
       xScale: [], // 水平刻度
@@ -126,6 +119,8 @@ export default {
       leftSpacing: 0, //  标尺与窗口左间距
       rulerWidth: 0, // 垂直标尺的宽度
       rulerHeight: 0, // 水平标尺的高度
+      rulerTop: 0,
+      rulerLeft: 0,
       keyCode: {
         r: 82
       }, // 快捷键参数
@@ -135,7 +130,7 @@ export default {
     }
   },
   computed: {
-    lineList() {
+    lineList () {
       let hCount = 0;
       let vCount = 0;
       const { left, top } = this.contentLayout
@@ -156,20 +151,22 @@ export default {
   },
   watch: {
     visible: {
-      handler(visible) {
+      handler (visible) {
         this.rulerToggle = visible;
       },
       immediate: true
     }
   },
   methods: {
-    handleDragLine({type, id}, e) {
+    handleDragLine ({ type, id }, e) {
       if (e.which !== 1) return
+      this.guideDragStartX = e.clientX
+      this.guideDragStartY = e.clientY
       return type === 'h' ? this.dragHorizontalLine(id) : this.dragVerticalLine(id)
     },
     setSpacing () {
-      this.topSpacing = this.$refs.horizontalRuler.getBoundingClientRect().y //.offsetParent.offsetTop
-      this.leftSpacing = this.$refs.verticalRuler.getBoundingClientRect().x// .offsetParent.offsetLeft
+      this.topSpacing = Math.ceil(this.$refs.horizontalRuler.getBoundingClientRect().y)
+      this.leftSpacing = Math.ceil(this.$refs.verticalRuler.getBoundingClientRect().x)
     },
     scaleCalc () {
       const rulerRange = this.rulerRange
@@ -180,7 +177,7 @@ export default {
       this.getCalc(this.yScale, rulerRange)
     },
     // 获取刻度方法
-    getCalc (array,length) {
+    getCalc (array, length) {
       const step = this.stepLength / this.zoom
       for (let i = 0; i < length * step / 50; i += step) {
         if (i % step === 0) {
@@ -189,7 +186,7 @@ export default {
       }
     },
     // 生成 0 刻度前置刻度
-    getCalcRevise (array,length) {
+    getCalcRevise (array, length) {
       array.splice(0)
       const step = this.stepLength / this.zoom
       for (let i = -length * step / 50; i < 0; i += step) {
@@ -203,55 +200,56 @@ export default {
 </script>
 
 <style lang="scss">
-.vue-ruler{
-  &-wrapper {
-    width: 100%;
-    height: 100%;
-    left: 0;
-    top: 0;
-    z-index: 1;
-    overflow: hidden;
-    user-select: none;
+  .vue-ruler {
+      &-wrapper {
+          width: 100%;
+          height: 100%;
+          left: 0;
+          top: 0;
+          z-index: 1;
+          overflow: hidden;
+          user-select: none;
+          background-color: rgba(0, 0, 0, 0.1);
+      }
+      &-content {
+          position: absolute;
+          left: 0;
+          top: 0;
+          z-index: 2;
+          width: 100%;
+          height: 100%;
+          overflow: hidden;
+          &.drag {
+              cursor: move;
+          }
+          .content-body {
+              position: absolute;
+              left: 0;
+              top: 0;
+              width: auto;
+              height: auto;
+              border: 18px transparent solid;
+              overflow: hidden;
+              transition: transform 0.4s;
+              overflow: hidden;
+          }
+      }
+      &-content-mask {
+          position: absolute;
+          width: 100%;
+          height: 100%;
+          background: transparent;
+          z-index: 4;
+      }
   }
-  &-content {
-    position: absolute;
-    left: 0;
-    top: 0;
-    z-index: 2;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    &.drag{
-      cursor: move;
-    }
-    .content-body{
+  .zoom-tip {
       position: absolute;
-      left: 0;
-      top: 0;
-      width: auto;
-      height: auto;
-      padding: 18px;
-      overflow: hidden;
-      transition: transform .4s;
-      overflow: hidden;
-    }
+      bottom: 15px;
+      left: 33px;
+      color: white;
+      font-size: 12px;
+      background-color: rgba(0, 0, 0, 0.5);
+      padding: 4px 8px;
+      z-index: 10;
   }
-  &-content-mask{
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    background: transparent;
-    z-index: 4;
-  }
-}
-.zoom-tip{
-  position: absolute;
-  bottom: 15px;
-  left: 33px;
-  color: white;
-  font-size: 12px;
-  background-color: rgba(0,0,0,.5);
-  padding: 4px 8px;
-  z-index: 10;
-}
 </style>

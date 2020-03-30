@@ -2,7 +2,9 @@ export default {
     data () {
         return {
             clientX: 0,
-            clientY: 0
+            clientY: 0,
+            guideStepFixTop: 0,
+            guideStepFixLeft: 0
         }
     },
     methods: {
@@ -33,17 +35,22 @@ export default {
         // 获取窗口宽与高
         box () {
             const position = this.$refs.rulerWrapper.getBoundingClientRect()
-            this.windowWidth = position.width
-            this.windowHeight = position.height
+            this.windowWidth = Math.ceil(position.width)
+            this.windowHeight = Math.ceil(position.height)
+            this.rulerLeft = Math.ceil(position.left)
+            this.rulerTop = Math.ceil(position.top)
+            this.guideStepFixLeft = this.rulerLeft % this.guideStep
+            this.guideStepFixTop = this.rulerTop % this.guideStep
             this.rulerWidth = this.$refs.verticalRuler.clientWidth
             this.rulerHeight = this.$refs.horizontalRuler.clientHeight
             this.contentWidth = this.contentRef.scrollWidth
             this.contentHeight = this.contentRef.scrollHeight
         },
         // 键盘事件
-        keyboard ($event) {
+        dispatchHotKey (e) {
             if (this.isHotKey) {
-                switch ($event.keyCode) {
+                console.info(e)
+                switch (e.keyCode) {
                     case this.keyCode.r:
                         this.rulerToggle = !this.rulerToggle
                         this.$emit('update:visible', this.rulerToggle)
@@ -51,6 +58,12 @@ export default {
                     case 17:
                         this.contentMove = false
                         this.contentMoveStartX = this.contentMoveStartY = 0
+                        break
+                    case 72:
+                        if (e.altKey) this.insertGuide('h')
+                        break
+                    case 86:
+                        if (e.altKey) this.insertGuide('v')
                         break
                 }
             }
@@ -76,18 +89,18 @@ export default {
     mounted () {
         document.addEventListener('mousemove', this.setMove)
         document.addEventListener('mouseup', this.stopMove)
-        document.addEventListener('keyup', this.keyboard)
+        document.addEventListener('keyup', this.dispatchHotKey)
         document.addEventListener('keydown', this.toggleContentMove)
         window.addEventListener('resize', this.windowResize)
         window.addEventListener('scroll', this.setSpacing)
         this.$refs.rulerWrapper.addEventListener('wheel', this.setZoom)
         this.$refs.rulerWrapper.addEventListener('dblclick', this.resetZoom)
-        this.init()
+        requestAnimationFrame(this.init)
     },
     beforeDestroy () {
         document.removeEventListener('mousemove', this.setMove)
         document.removeEventListener('mouseup', this.stopMove)
-        document.removeEventListener('keyup', this.keyboard)
+        document.removeEventListener('keyup', this.dispatchHotKey)
         document.removeEventListener('keydown', this.toggleContentMove)
         window.removeEventListener('resize', this.windowResize)
         window.removeEventListener('scroll', this.setSpacing)

@@ -18,11 +18,11 @@ export default {
   computed: {
     // 容器可拖动的水平量
     contentScrollRangeX () {
-      return (this.contentWidth - this.windowWidth + this.contentLayout.left * 2) | 0
+      return Math.ceil(this.contentWidth - this.windowWidth + this.contentLayout.left * 2)
     },
     // 容器可拖动的垂直量
     contentScrollRangeY () {
-      return (this.contentHeight - this.windowHeight + this.contentLayout.top * 2) | 0
+      return Math.ceil(this.contentHeight - this.windowHeight + this.contentLayout.top * 2)
     },
     contentRef () {
       return this.$refs.content || {}
@@ -32,10 +32,7 @@ export default {
     },
     contentStyle () {
       return {
-        paddingLeft: this.contentLayout.left + 18 + 'px',
-        paddingTop: this.contentLayout.top + 18 + 'px',
-        paddingRight: this.contentLayout.left + 18 + 'px',
-        paddingBottom: this.contentLayout.top + 18 + 'px',
+        borderWidth: this.contentLayout.left + 18 + 'px',
         transform: `translate3d(${this.contentScrollLeft}px, ${this.contentScrollTop}px, 0) scale(${this.zoom})`,
         transition: this.dragTransition,
         pointerEvents: this.contentMove ? 'none' : 'auto'
@@ -71,8 +68,8 @@ export default {
     easingMove () {
       const dragTime = this.contentDragTime
       const zoom = this.zoom
-      this.contentScrollLeft += this.contentDragDistanceX / dragTime * 30 * (zoom > 1 ? zoom : 1) | 0
-      this.contentScrollTop += this.contentDragDistanceY / dragTime * 30 * (zoom > 1 ? zoom : 1) | 0
+      this.contentScrollLeft += Math.ceil(this.contentDragDistanceX / dragTime * 30 * (zoom > 1 ? zoom : 1))
+      this.contentScrollTop += Math.ceil(this.contentDragDistanceY / dragTime * 30 * (zoom > 1 ? zoom : 1))
       this.contentMoveFence()
       this.easingMoveTimer = setTimeout(() => {
         this.contentDragTime = 0
@@ -96,8 +93,8 @@ export default {
         this.contentMoveStartY = clientY
       }
       const zoom = this.zoom
-      this.contentScrollLeft += (clientX - this.contentMoveStartX) / 3 * (zoom > 1 ? zoom : 1) | 0
-      this.contentScrollTop += (clientY - this.contentMoveStartY) / 3 * (zoom > 1 ? zoom : 1) | 0
+      this.contentScrollLeft += Math.ceil((clientX - this.contentMoveStartX) / 3 * (zoom > 1 ? zoom : 1))
+      this.contentScrollTop += Math.ceil((clientY - this.contentMoveStartY) / 3 * (zoom > 1 ? zoom : 1))
       this.contentMoveFence()
       this.contentMoveStartX = clientX
       this.contentMoveStartY = clientY

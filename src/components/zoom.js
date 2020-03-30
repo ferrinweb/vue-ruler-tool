@@ -18,9 +18,11 @@ export default {
       },
       immediate: true
     },
-    zoom (zoom) {
-      // this.contentScrollLeft += this.contentWidth * (zoom - 1)
-      // this.contentScrollTop += this.contentHeight * (zoom - 1)
+    zoom: {
+      handler: function (zoom) {
+        this.$emit('zoom', zoom)
+      },
+      immediate: true
     }
   },
   computed: {
@@ -28,7 +30,7 @@ export default {
       return this.zooms[this.zoomIndex]
     },
     fixedWidth () {
-      console.info(this.contentWidth)
+      // console.info(this.contentWidth)
       return this.contentWidth * (this.zoom - 1) / 2
     },
     fixedHeight () {
@@ -37,12 +39,12 @@ export default {
     hRulerScrollLeft () {
       const paddingLeft = this.contentLayout.left
       const zoom = this.zoom
-      return this.contentScrollLeft - this.fixedWidth - this.rulerRange / 2 + paddingLeft * zoom + (zoom - 1) * 18
+      return Math.ceil(this.contentScrollLeft - this.fixedWidth - this.rulerRange / 2 + paddingLeft)
     },
     vRulerScrollTop () {
       const paddingTop = this.contentLayout.top
       const zoom = this.zoom
-      return this.contentScrollTop - this.fixedHeight - this.rulerRange / 2 + paddingTop * zoom + (zoom - 1) * 18
+      return Math.ceil(this.contentScrollTop - this.fixedHeight - this.rulerRange / 2 + paddingTop)
     }
   },
   methods: {
